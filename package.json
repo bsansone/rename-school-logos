@@ -1,0 +1,18 @@
+{
+  "name": "rename-school-logos",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cli-progress": "^3.8.2",
+    "fuse.js": "^6.0.0",
+    "inquirer": "^7.1.0",
+    "lodash.snakecase": "^4.1.1",
+    "lodash.startcase": "^4.4.0"
+  }
+}
