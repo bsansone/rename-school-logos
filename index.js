@@ -17,6 +17,7 @@ const SCHOOLS = require("./data/schools.json");
 
 // Constants
 const ARG_TYPES = {
+	// Clears the prompts cache
 	CLEAN: "--clean",
 };
 const PATHS = {
@@ -29,24 +30,19 @@ const PATHS = {
 	},
 };
 const FUSE_OPTIONS = {
-	keys: [
-		{
-			name: "NAME",
-		},
-		{
-			name: "WEBSITE",
-		},
-		{
-			name: "ALIAS",
-		},
-	],
+	keys: ["NAME"],
 	includeScore: true,
+	isCaseSensitive: true,
 };
 const CLI_PROGRESS_OPTIONS = {
 	format: "Progress [{bar}] | {filename} | {percentage}%  | {value}/{total}",
 };
 
-const fuse = new Fuse(SCHOOLS, FUSE_OPTIONS);
+// Use Fuse.createIndex to pre-generate the index from the list, and
+// pass it directly into the Fuse instance. This will speed up instantiation.
+const FUSE_INDEX = Fuse.createIndex(["NAME"], SCHOOLS);
+
+const fuse = new Fuse(SCHOOLS, FUSE_OPTIONS, FUSE_INDEX);
 
 const bar = new cliProgress.SingleBar(
 	CLI_PROGRESS_OPTIONS,
@@ -107,7 +103,7 @@ const startQuestions = (prompts) => {
 		.prompt(prompts)
 		.then((answers) => {
 			if (!fs.existsSync(PATHS.DIR.OUTPUT)) {
-				fs.mkdirSync(PATHS.DIR.OUTPUT, () => {
+				fs.mkdir(PATHS.DIR.OUTPUT, () => {
 					console.log("Output directory created.");
 					generateOutputFiles(answers);
 				});
@@ -147,7 +143,7 @@ const generateOutputFiles = (answers) => {
 
 	Promise.all(
 		operations.map(({ from, to }) => {
-			bar.increment({ operation: `${from} -> ${to}` });
+			bar.increment({ filename: `${from} -> ${to}` });
 			return copyFilePromise(
 				path.join(PATHS.DIR.LOGOS, from),
 				path.join(PATHS.DIR.OUTPUT, to)
