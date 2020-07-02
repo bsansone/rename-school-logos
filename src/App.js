@@ -174,7 +174,6 @@ function App() {
   };
 
   const getFuseResults = (query) => {
-    console.log('getFuseResults')
     const formattedQuery = query.trim().toUpperCase();
 
     if (FUSE_CACHE[formattedQuery]) {
@@ -200,7 +199,6 @@ function App() {
   };
 
   const onSchoolQuery = (e) => {
-    console.log('onSchoolQuery')
     setSchoolQuery(e.target.value);
 
     if (e.target.value.length >= 3) {
