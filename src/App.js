@@ -141,7 +141,7 @@ function App() {
   const [schoolQuery, setSchoolQuery] = React.useState("");
   const [fuseResults, setFuseResults] = React.useState([]);
   const delayedSchoolQuery = React.useCallback(
-    debounce((q) => getFuseResults(q), 250),
+    debounce((q) => getFuseResults(q), 500),
     []
   );
 
@@ -174,6 +174,7 @@ function App() {
   };
 
   const getFuseResults = (query) => {
+    console.log('getFuseResults')
     const formattedQuery = query.trim().toUpperCase();
 
     if (FUSE_CACHE[formattedQuery]) {
@@ -188,8 +189,7 @@ function App() {
           }`.trim(),
           score: o.score.toFixed(4),
           value: o.item.NAME,
-        }))
-        .slice(0, 500);
+        }));
 
       FUSE_CACHE[formattedQuery] = results;
 
@@ -200,6 +200,7 @@ function App() {
   };
 
   const onSchoolQuery = (e) => {
+    console.log('onSchoolQuery')
     setSchoolQuery(e.target.value);
 
     if (e.target.value.length >= 3) {
@@ -265,9 +266,20 @@ function App() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Select value={logoIndex} placeholder="Select school" my={6} size="sm" onChange={(e) => goToLogo(parseInt(e.target.value))}>
+              <Select
+                value={logoIndex}
+                placeholder="Select school"
+                my={6}
+                size="sm"
+                onChange={(e) => goToLogo(parseInt(e.target.value))}
+              >
                 {logos.map((logo, index) => (
-                  <option key={index} value={index}>{formatLogoFilename(logo)}</option>
+                  <option key={index} value={index}>
+                    {formatLogoFilename(logo)}{" "}
+                    {checkedSchools[index] && checkedSchools[index].length > 0
+                      ? ` — (${checkedSchools[index].length})`
+                      : null}
+                  </option>
                 ))}
               </Select>
               <Flex align="center" justifyContent="space-between" pt={12}>
@@ -339,7 +351,17 @@ function App() {
                                 as="span"
                                 ml={8}
                                 fontSize="xs"
-                                variantColor="blue"
+                                variantColor={
+                                  result.score < 0.1
+                                    ? "green"
+                                    : result.score < 0.2
+                                    ? "yellow"
+                                    : result.score < 0.3
+                                    ? "orange"
+                                    : result.score >= 0.75
+                                    ? "red"
+                                    : "blue"
+                                }
                               >
                                 {result.score}
                               </Badge>
@@ -353,6 +375,11 @@ function App() {
                     ))}
                   </CheckboxGroup>
                 </Box>
+              ) : null}
+              {fuseResults.length > 0 ? (
+                <Text pt={2} textAlign="right" fontSize="sm">
+                  {fuseResults.length} results found
+                </Text>
               ) : null}
             </TabPanel>
             <TabPanel>
