@@ -1,20 +1,42 @@
 {
   "name": "rename-school-logos",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
-    "cli-progress": "^3.8.2",
-    "fuse.js": "^6.0.0",
-    "inquirer": "^7.1.0",
-    "lodash.reduce": "^4.6.0",
-    "lodash.snakecase": "^4.1.1",
+    "@chakra-ui/core": "^0.8.0",
+    "@emotion/core": "^10.0.28",
+    "@emotion/styled": "^10.0.27",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "emotion-theming": "^10.0.27",
+    "fuse.js": "^6.4.0",
+    "lodash.debounce": "^4.0.8",
     "lodash.startcase": "^4.4.0",
-    "rimraf": "^3.0.2"
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-fuzzy": "^1.0.0",
+    "react-scripts": "3.4.1"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
