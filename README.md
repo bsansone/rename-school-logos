@@ -1,4 +1,4 @@
-#rename-school-logos
+# rename-school-logos
 
 Small webapp used to match a logo with the matching schools.
 
