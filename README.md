@@ -2,7 +2,7 @@
 
 Small webapp used to match a logo with the matching schools.
 
-- Saves to progress in localStorage
+- Saves progress to localStorage
 - UI built with Chakra UI
 
 Setup:
