@@ -14,7 +14,6 @@
     "lodash.startcase": "^4.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-fuzzy": "^1.0.0",
     "react-scripts": "3.4.1"
   },
   "scripts": {
