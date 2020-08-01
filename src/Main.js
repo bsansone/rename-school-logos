@@ -56,7 +56,9 @@ const LOGOS = logos
   .filter((logo) => logo);
 
 const formatLogoFilename = (filename) =>
-  filename ? filename.replace("images/logos/", "").replace(".png", "") : filename;
+  filename
+    ? filename.replace("images/logos/", "").replace(".png", "")
+    : filename;
 
 const getUrlIndex = () => {
   const index = parseInt(window.location.pathname.replace("/", "")) || 0;
@@ -138,9 +140,7 @@ function Main() {
   const [isLoadingSearchResults, setIsLoadingSearchResults] = React.useState(
     false
   );
-  const [isFixingSchools, setIsFixingSchools] = React.useState(
-    false
-  );
+  const [isFixingSchools, setIsFixingSchools] = React.useState(false);
   const [schoolQuery, setSchoolQuery] = React.useState("");
   const [fuseResults, setFuseResults] = React.useState([]);
   const delayedSchoolQuery = React.useCallback(
@@ -252,18 +252,18 @@ function Main() {
         setCheckedSchools(fixedSchoolData);
         setSavedCheckedSchools(fixedSchoolData);
         toast({
-            title: "Schools fixed.",
-            status: "success",
-            duration: 9000,
-            isClosable: true,
-          });
+          title: "Schools fixed.",
+          status: "success",
+          duration: 9000,
+          isClosable: true,
+        });
       } else {
         toast({
-            description: "No schools to be fixed.",
-            status: "warning",
-            duration: 9000,
-            isClosable: true,
-          });
+          description: "No schools to be fixed.",
+          status: "warning",
+          duration: 9000,
+          isClosable: true,
+        });
       }
 
       setIsFixingSchools(false);
@@ -281,11 +281,16 @@ function Main() {
   };
 
   const downloadSavedData = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(savedCheckedSchools));
-    const downloadAnchorNode = document.createElement('a');
+    const dataStr =
+      "data:text/json;charset=utf-8," +
+      encodeURIComponent(JSON.stringify(savedCheckedSchools));
+    const downloadAnchorNode = document.createElement("a");
     const now = new Date();
     downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", `rename_school_logos_${now}.json`);
+    downloadAnchorNode.setAttribute(
+      "download",
+      `rename_school_logos_${now}.json`
+    );
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
@@ -302,256 +307,251 @@ function Main() {
   }, [logoIndex, location]);
 
   return (
-      <Box
-        maxWidth={900}
-        p={4}
-        borderRadius={4}
-        borderWidth={2}
-        borderStyle="solid"
-        m="auto"
-        my={4}
-        bg="white"
-      >
-        <Tabs variant="soft-rounded">
-          <TabList>
-            <Tab>Home</Tab>
-            <Tab>Current Results</Tab>
-            <Tab>Other</Tab>
-          </TabList>
-          <TabPanels>
-            <TabPanel>
-              <SchoolSelect
-                logoIndex={logoIndex}
-                logos={logos}
-                checkedSchools={checkedSchools}
-                goToLogo={goToLogo}
-              />
-              <Flex align="center" justifyContent="space-between" pt={12}>
-                <Tooltip
-                  label={formatLogoFilename(LOGOS[getPreviousLogoIndex()])}
-                >
-                  <Button onClick={decrementLogo}>
-                    <Icon name="chevron-left" />
-                  </Button>
-                </Tooltip>
-                <Flex flexDirection="column" align="center">
-                  <Image src={LOGOS[logoIndex]} maxW={350} mb={6} />
-                  <Text>{formatLogoFilename(LOGOS[logoIndex])}</Text>
-                </Flex>
-                <Tooltip label={formatLogoFilename(LOGOS[getNextLogoIndex()])}>
-                  <Button onClick={incrementLogo}>
-                    <Icon name="chevron-right" />
-                  </Button>
-                </Tooltip>
+    <Box
+      maxWidth={900}
+      p={4}
+      borderRadius={4}
+      borderWidth={2}
+      borderStyle="solid"
+      m="auto"
+      my={4}
+      bg="white"
+    >
+      <Tabs variant="soft-rounded">
+        <TabList>
+          <Tab>Home</Tab>
+          <Tab>Current Results</Tab>
+          <Tab>Other</Tab>
+        </TabList>
+        <TabPanels>
+          <TabPanel>
+            <SchoolSelect
+              logoIndex={logoIndex}
+              logos={logos}
+              checkedSchools={checkedSchools}
+              goToLogo={goToLogo}
+            />
+            <Flex align="center" justifyContent="space-between" pt={12}>
+              <Tooltip
+                label={formatLogoFilename(LOGOS[getPreviousLogoIndex()])}
+              >
+                <Button onClick={decrementLogo}>
+                  <Icon name="chevron-left" />
+                </Button>
+              </Tooltip>
+              <Flex flexDirection="column" align="center">
+                <Image src={LOGOS[logoIndex]} maxW={350} mb={6} />
+                <Text>{formatLogoFilename(LOGOS[logoIndex])}</Text>
               </Flex>
-              <Box my={6}>
-                <SelectedSchoolTags logoIndex={logoIndex} checkedSchools={checkedSchools} removeSchool={removeSchool} />
-                <Input
-                  placeholder="Search schools..."
-                  onChange={onSchoolQuery}
-                  value={schoolQuery}
-                  type="text"
-                  borderWidth={2}
-                />
-              </Box>
-              <SearchResults
-                isLoadingSearchResults={isLoadingSearchResults}
-                fuseResults={fuseResults}
-                checkedSchools={checkedSchools}
-                toggleCheckedSchools={toggleCheckedSchools}
+              <Tooltip label={formatLogoFilename(LOGOS[getNextLogoIndex()])}>
+                <Button onClick={incrementLogo}>
+                  <Icon name="chevron-right" />
+                </Button>
+              </Tooltip>
+            </Flex>
+            <Box my={6}>
+              <SelectedSchoolTags
                 logoIndex={logoIndex}
+                checkedSchools={checkedSchools}
+                removeSchool={removeSchool}
               />
-            </TabPanel>
-            <TabPanel>
-              <Stack spacing={4} pt={8}>
-                {checkedSchools ? (
-                  Object.keys(checkedSchools)
-                    .filter(
-                      (schoolIndex) =>
-                        checkedSchools[schoolIndex] &&
-                        checkedSchools[schoolIndex].length
-                    )
-                    .map((schoolIndex) => (
-                      <Box
-                        key={schoolIndex}
-                        p={5}
-                        shadow="md"
-                        borderWidth={1}
-                      >
-                        <Heading fontSize="md" mb={2}>
-                          {formatLogoFilename(LOGOS[schoolIndex])}
-                        </Heading>
-                        <List spacing={3}>
-                          {checkedSchools[schoolIndex].map((school) => (
-                            <ListItem key={school} fontSize="md">
-                              <Tooltip label={`Remove ${school}`}>
-                                <IconButton
-                                  variant="ghost"
-                                  mr={2}
-                                  size="xs"
-                                  icon="close"
-                                  variantColor="red"
-                                  onClick={() => removeSchool(school)}
-                                />
-                              </Tooltip>
-                              {school}
-                            </ListItem>
-                          ))}
-                        </List>
-                      </Box>
-                    ))
-                ) : (
-                  <Text>Nothing here</Text>
-                )}
-              </Stack>
-            </TabPanel>
-            <TabPanel>
-              <Stack pt={8} spacing={4}>
-            <Button onClick={downloadSavedData}>
-                Download Saved Data
-              </Button>
+              <Input
+                placeholder="Search schools..."
+                onChange={onSchoolQuery}
+                value={schoolQuery}
+                type="text"
+                borderWidth={2}
+              />
+            </Box>
+            <SearchResults
+              isLoadingSearchResults={isLoadingSearchResults}
+              fuseResults={fuseResults}
+              checkedSchools={checkedSchools}
+              toggleCheckedSchools={toggleCheckedSchools}
+              logoIndex={logoIndex}
+            />
+          </TabPanel>
+          <TabPanel>
+            <Stack spacing={4} pt={8}>
+              {checkedSchools ? (
+                Object.keys(checkedSchools)
+                  .filter(
+                    (schoolIndex) =>
+                      checkedSchools[schoolIndex] &&
+                      checkedSchools[schoolIndex].length
+                  )
+                  .map((schoolIndex) => (
+                    <Box key={schoolIndex} p={5} shadow="md" borderWidth={1}>
+                      <Heading fontSize="md" mb={2}>
+                        {formatLogoFilename(LOGOS[schoolIndex])}
+                      </Heading>
+                      <List spacing={3}>
+                        {checkedSchools[schoolIndex].map((school) => (
+                          <ListItem key={school} fontSize="md">
+                            <Tooltip label={`Remove ${school}`}>
+                              <IconButton
+                                variant="ghost"
+                                mr={2}
+                                size="xs"
+                                icon="close"
+                                variantColor="red"
+                                onClick={() => removeSchool(school)}
+                              />
+                            </Tooltip>
+                            {school}
+                          </ListItem>
+                        ))}
+                      </List>
+                    </Box>
+                  ))
+              ) : (
+                <Text>Nothing here</Text>
+              )}
+            </Stack>
+          </TabPanel>
+          <TabPanel>
+            <Stack pt={8} spacing={4}>
+              <Button onClick={downloadSavedData}>Download Saved Data</Button>
               <Button onClick={fixSchools} disabled={isFixingSchools}>
-                {isFixingSchools ? "Fixing..." : "Fix Schools" }
+                {isFixingSchools ? "Fixing..." : "Fix Schools"}
               </Button>
-              </Stack>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </Box>
+            </Stack>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
+    </Box>
   );
 }
 
 const SchoolSelect = ({ logoIndex, logos, checkedSchools, goToLogo }) => {
   return (
     <Select
-    value={logoIndex}
-    placeholder="Select school"
-    my={6}
-    size="sm"
-    onChange={(e) => goToLogo(parseInt(e.target.value))}
-  >
-    {logos.map((logo, index) => (
+      value={logoIndex}
+      placeholder="Select school"
+      my={6}
+      size="sm"
+      onChange={(e) => goToLogo(parseInt(e.target.value))}
+    >
+      {logos.map((logo, index) => (
         <SchoolSelectOption
           key={index}
           index={index}
           logo={logo}
           checkedSchools={checkedSchools}
         />
-    ))}
-  </Select>
+      ))}
+    </Select>
   );
 };
 
 const SchoolSelectOption = ({ index, logo, checkedSchools }) => {
   return (
     <option value={index}>
-    {formatLogoFilename(logo)}{" "}
-    {checkedSchools[LOGOS[index]] && checkedSchools[LOGOS[index]].length > 0
-      ? ` — (${checkedSchools[LOGOS[index]].length})`
-      : null}
-  </option>
+      {formatLogoFilename(logo)}{" "}
+      {checkedSchools[LOGOS[index]] && checkedSchools[LOGOS[index]].length > 0
+        ? ` — (${checkedSchools[LOGOS[index]].length})`
+        : null}
+    </option>
   );
-}
+};
 
-const SearchResults = ({ isLoadingSearchResults, fuseResults, checkedSchools, toggleCheckedSchools, logoIndex }) => {
-    if (isLoadingSearchResults) {
-      return <Skeleton height={10} my={10} />;
-    }
+const SearchResults = ({
+  isLoadingSearchResults,
+  fuseResults,
+  checkedSchools,
+  toggleCheckedSchools,
+  logoIndex,
+}) => {
+  if (isLoadingSearchResults) {
+    return <Skeleton height={10} my={10} />;
+  }
 
-    return (
-        <React.Fragment>
-              {!isLoadingSearchResults && fuseResults.length > 0 ? (
-                <Box
-                  maxH={500}
-                  overflowY="scroll"
-                  borderRadius={4}
-                  borderWidth={2}
-                  borderStyle="solid"
-                  p={4}
-                >
-                  <CheckboxGroup
-                    size="lg"
-                    onChange={toggleCheckedSchools}
-                    value={checkedSchools[logoIndex]}
-                  >
-                    {fuseResults.map((result, index) => (
-                        <Checkbox
-                            key={`${result.name}-${index}`}
-                        value={result.name}
-                      >
-                       <Result
-                            name={result.name}
-                            location={result.location}
-                            score={result.score}
-                        />
-                      </Checkbox>
-                    ))}
-                  </CheckboxGroup>
-                </Box>
-              ) : null}
-              {fuseResults.length > 0 ? (
-                <Text pt={2} textAlign="right" fontSize="sm">
-                  {fuseResults.length} results found
-                </Text>
-              ) : null}
-        </React.Fragment>
-    );
+  return (
+    <React.Fragment>
+      {!isLoadingSearchResults && fuseResults.length > 0 ? (
+        <Box
+          maxH={500}
+          overflowY="scroll"
+          borderRadius={4}
+          borderWidth={2}
+          borderStyle="solid"
+          p={4}
+        >
+          <CheckboxGroup
+            size="lg"
+            onChange={toggleCheckedSchools}
+            value={checkedSchools[logoIndex]}
+          >
+            {fuseResults.map((result, index) => (
+              <Checkbox key={`${result.name}-${index}`} value={result.name}>
+                <Result
+                  name={result.name}
+                  location={result.location}
+                  score={result.score}
+                />
+              </Checkbox>
+            ))}
+          </CheckboxGroup>
+        </Box>
+      ) : null}
+      {fuseResults.length > 0 ? (
+        <Text pt={2} textAlign="right" fontSize="sm">
+          {fuseResults.length} results found
+        </Text>
+      ) : null}
+    </React.Fragment>
+  );
 };
 
 const Result = ({ name, score, location }) => {
-    return (
-        <Flex
-          ml={4}
-          justifyContent="space-between"
-          align="center"
-        >
-          <Flex flexDir="column">
-            <Text fontSize="md">
-              {name}
-              <Badge
-                as="span"
-                ml={8}
-                fontSize="xs"
-                variantColor={
-                  score < 0.1
-                    ? "green"
-                    : score < 0.2
-                    ? "yellow"
-                    : score < 0.3
-                    ? "orange"
-                    : score >= 0.75
-                    ? "red"
-                    : "blue"
-                }
-              >
-                {score}
-              </Badge>
-            </Text>
-            <Text fontSize="xs" color="gray.500">
-              {location}
-            </Text>
-          </Flex>
-        </Flex>
-    );
+  return (
+    <Flex ml={4} justifyContent="space-between" align="center">
+      <Flex flexDir="column">
+        <Text fontSize="md">
+          {name}
+          <Badge
+            as="span"
+            ml={8}
+            fontSize="xs"
+            variantColor={
+              score < 0.1
+                ? "green"
+                : score < 0.2
+                ? "yellow"
+                : score < 0.3
+                ? "orange"
+                : score >= 0.75
+                ? "red"
+                : "blue"
+            }
+          >
+            {score}
+          </Badge>
+        </Text>
+        <Text fontSize="xs" color="gray.500">
+          {location}
+        </Text>
+      </Flex>
+    </Flex>
+  );
 };
 
 const SelectedSchoolTags = ({ logoIndex, checkedSchools, removeSchool }) => {
-    if (LOGOS[logoIndex] in checkedSchools) {
-        return (
-            <Flex mb={4} flexWrap="wrap">
-                {checkedSchools[LOGOS[logoIndex]].map((school) => (
-                <Tag key={school} mr={2} mb={2}>
-                    <TagLabel>{school}</TagLabel>
-                    <TagCloseButton onClick={() => removeSchool(school)} />
-                </Tag>
-                ))}
-            </Flex>
-        );
-    }
+  if (LOGOS[logoIndex] in checkedSchools) {
+    return (
+      <Flex mb={4} flexWrap="wrap">
+        {checkedSchools[LOGOS[logoIndex]].map((school) => (
+          <Tag key={school} mr={2} mb={2}>
+            <TagLabel>{school}</TagLabel>
+            <TagCloseButton onClick={() => removeSchool(school)} />
+          </Tag>
+        ))}
+      </Flex>
+    );
+  }
 
-    return null;
+  return null;
 };
-
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // useLocalStorage
