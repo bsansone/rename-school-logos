@@ -320,22 +320,12 @@ function Main() {
           </TabList>
           <TabPanels>
             <TabPanel>
-              <Select
-                value={logoIndex}
-                placeholder="Select school"
-                my={6}
-                size="sm"
-                onChange={(e) => goToLogo(parseInt(e.target.value))}
-              >
-                {logos.map((logo, index) => (
-                  <option key={index} value={index}>
-                    {formatLogoFilename(logo)}{" "}
-                    {checkedSchools[index] && checkedSchools[index].length > 0
-                      ? ` — (${checkedSchools[index].length})`
-                      : null}
-                  </option>
-                ))}
-              </Select>
+              <SchoolSelect
+                logoIndex={logoIndex}
+                logos={logos}
+                checkedSchools={checkedSchools}
+                goToLogo={goToLogo}
+              />
               <Flex align="center" justifyContent="space-between" pt={12}>
                 <Tooltip
                   label={formatLogoFilename(LOGOS[getPreviousLogoIndex()])}
@@ -431,10 +421,45 @@ function Main() {
   );
 }
 
+const SchoolSelect = ({ logoIndex, logos, checkedSchools, goToLogo }) => {
+  return (
+    <Select
+    value={logoIndex}
+    placeholder="Select school"
+    my={6}
+    size="sm"
+    onChange={(e) => goToLogo(parseInt(e.target.value))}
+  >
+    {logos.map((logo, index) => (
+        <SchoolSelectOption
+          key={index}
+          index={index}
+          logo={logo}
+          checkedSchools={checkedSchools}
+        />
+    ))}
+  </Select>
+  );
+};
+
+const SchoolSelectOption = ({ index, logo, checkedSchools }) => {
+  return (
+    <option value={index}>
+    {formatLogoFilename(logo)}{" "}
+    {checkedSchools[LOGOS[index]] && checkedSchools[LOGOS[index]].length > 0
+      ? ` — (${checkedSchools[LOGOS[index]].length})`
+      : null}
+  </option>
+  );
+}
+
 const SearchResults = ({ isLoadingSearchResults, fuseResults, checkedSchools, toggleCheckedSchools, logoIndex }) => {
+    if (isLoadingSearchResults) {
+      return <Skeleton height={10} my={10} />;
+    }
+
     return (
         <React.Fragment>
-              {isLoadingSearchResults ? <Skeleton height={10} my={10} /> : null}
               {!isLoadingSearchResults && fuseResults.length > 0 ? (
                 <Box
                   maxH={500}
