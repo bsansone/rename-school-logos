@@ -147,6 +147,7 @@ function Main() {
     debounce((q) => getFuseResults(q), 500),
     []
   );
+  const [currentLogo, setCurrentLogo] = React.useState(LOGOS[logoIndex]);
 
   const getNextLogoIndex = () => {
     if (logoIndex === LOGOS.length - 1) {
@@ -217,7 +218,7 @@ function Main() {
   const toggleCheckedSchools = (checked) => {
     const newCheckedSchools = {
       ...checkedSchools,
-      [LOGOS[logoIndex]]: [...checked],
+      [currentLogo]: [...checked],
     };
 
     setCheckedSchools(newCheckedSchools);
@@ -227,7 +228,7 @@ function Main() {
   const removeSchool = (school) => {
     const newCheckedSchools = {
       ...checkedSchools,
-      [LOGOS[logoIndex]]: checkedSchools[LOGOS[logoIndex]].filter(
+      [currentLogo]: checkedSchools[currentLogo].filter(
         (_school) => _school !== school
       ),
     };
@@ -306,6 +307,10 @@ function Main() {
     }
   }, [logoIndex, location]);
 
+  React.useEffect(() => {
+    setCurrentLogo(LOGOS[logoIndex]);
+  }, [logoIndex]);
+
   return (
     <Box
       maxWidth={900}
@@ -327,7 +332,7 @@ function Main() {
           <TabPanel>
             <SchoolSelect
               logoIndex={logoIndex}
-              logos={logos}
+                logos={logos}
               checkedSchools={checkedSchools}
               goToLogo={goToLogo}
             />
@@ -340,8 +345,8 @@ function Main() {
                 </Button>
               </Tooltip>
               <Flex flexDirection="column" align="center">
-                <Image src={LOGOS[logoIndex]} maxW={350} mb={6} />
-                <Text>{formatLogoFilename(LOGOS[logoIndex])}</Text>
+                <Image src={currentLogo} maxW={350} mb={6} />
+                <Text>{formatLogoFilename(currentLogo)}</Text>
               </Flex>
               <Tooltip label={formatLogoFilename(LOGOS[getNextLogoIndex()])}>
                 <Button onClick={incrementLogo}>
@@ -351,8 +356,7 @@ function Main() {
             </Flex>
             <Box my={6}>
               <SelectedSchoolTags
-                logoIndex={logoIndex}
-                checkedSchools={checkedSchools}
+                selected={checkedSchools[currentLogo]}
                 removeSchool={removeSchool}
               />
               <Input
@@ -365,49 +369,17 @@ function Main() {
             </Box>
             <SearchResults
               isLoadingSearchResults={isLoadingSearchResults}
-              fuseResults={fuseResults}
+                currentLogo={currentLogo}
+                fuseResults={fuseResults}
               checkedSchools={checkedSchools}
               toggleCheckedSchools={toggleCheckedSchools}
-              logoIndex={logoIndex}
             />
           </TabPanel>
           <TabPanel>
-            <Stack spacing={4} pt={8}>
-              {checkedSchools ? (
-                Object.keys(checkedSchools)
-                  .filter(
-                    (schoolIndex) =>
-                      checkedSchools[schoolIndex] &&
-                      checkedSchools[schoolIndex].length
-                  )
-                  .map((schoolIndex) => (
-                    <Box key={schoolIndex} p={5} shadow="md" borderWidth={1}>
-                      <Heading fontSize="md" mb={2}>
-                        {formatLogoFilename(LOGOS[schoolIndex])}
-                      </Heading>
-                      <List spacing={3}>
-                        {checkedSchools[schoolIndex].map((school) => (
-                          <ListItem key={school} fontSize="md">
-                            <Tooltip label={`Remove ${school}`}>
-                              <IconButton
-                                variant="ghost"
-                                mr={2}
-                                size="xs"
-                                icon="close"
-                                variantColor="red"
-                                onClick={() => removeSchool(school)}
-                              />
-                            </Tooltip>
-                            {school}
-                          </ListItem>
-                        ))}
-                      </List>
-                    </Box>
-                  ))
-              ) : (
-                <Text>Nothing here</Text>
-              )}
-            </Stack>
+            <SelectedSchools
+              checkedSchools={checkedSchools}
+              removeSchool={removeSchool}
+            />
           </TabPanel>
           <TabPanel>
             <Stack pt={8} spacing={4}>
@@ -437,19 +409,19 @@ const SchoolSelect = ({ logoIndex, logos, checkedSchools, goToLogo }) => {
           key={index}
           index={index}
           logo={logo}
-          checkedSchools={checkedSchools}
+          selected={checkedSchools[LOGOS[index]]}
         />
       ))}
     </Select>
   );
 };
 
-const SchoolSelectOption = ({ index, logo, checkedSchools }) => {
+const SchoolSelectOption = ({ index, logo, selected }) => {
   return (
     <option value={index}>
       {formatLogoFilename(logo)}{" "}
-      {checkedSchools[LOGOS[index]] && checkedSchools[LOGOS[index]].length > 0
-        ? ` — (${checkedSchools[LOGOS[index]].length})`
+      {selected && selected.length > 0
+        ? ` — (${selected.length})`
         : null}
     </option>
   );
@@ -460,7 +432,7 @@ const SearchResults = ({
   fuseResults,
   checkedSchools,
   toggleCheckedSchools,
-  logoIndex,
+  currentLogo,
 }) => {
   if (isLoadingSearchResults) {
     return <Skeleton height={10} my={10} />;
@@ -480,7 +452,7 @@ const SearchResults = ({
           <CheckboxGroup
             size="lg"
             onChange={toggleCheckedSchools}
-            value={checkedSchools[logoIndex]}
+            value={checkedSchools[currentLogo]}
           >
             {fuseResults.map((result, index) => (
               <Checkbox key={`${result.name}-${index}`} value={result.name}>
@@ -536,21 +508,81 @@ const Result = ({ name, score, location }) => {
   );
 };
 
-const SelectedSchoolTags = ({ logoIndex, checkedSchools, removeSchool }) => {
-  if (LOGOS[logoIndex] in checkedSchools) {
-    return (
-      <Flex mb={4} flexWrap="wrap">
-        {checkedSchools[LOGOS[logoIndex]].map((school) => (
-          <Tag key={school} mr={2} mb={2}>
-            <TagLabel>{school}</TagLabel>
-            <TagCloseButton onClick={() => removeSchool(school)} />
-          </Tag>
-        ))}
-      </Flex>
-    );
+const SelectedSchoolTags = ({ selected, removeSchool }) => {
+  if (!selected || !selected.length || selected.length === 0) {
+    return null;
   }
 
-  return null;
+  return (
+    <Flex mb={4} flexWrap="wrap">
+      {selected.map((school) => (
+        <Tag key={school} mr={2} mb={2}>
+          <TagLabel>{school}</TagLabel>
+          <TagCloseButton onClick={() => removeSchool(school)} />
+        </Tag>
+      ))}
+    </Flex>
+  );
+};
+
+const SelectedSchools = ({ checkedSchools, removeSchool }) => {
+  const hasCheckedSchools = checkedSchools && Object.keys(checkedSchools).length > 0;
+
+  return (
+    <Stack spacing={4} pt={8}>
+    {hasCheckedSchools ? (
+      Object.keys(checkedSchools)
+        .filter(
+          (schoolKey) =>
+            checkedSchools[schoolKey] &&
+            checkedSchools[schoolKey].length
+        )
+        .map((schoolKey) => (
+          <SelectedSchool
+            key={schoolKey}
+            schoolKey={schoolKey}
+            selected={checkedSchools[schoolKey]}
+            removeSchool={removeSchool}
+          />
+        ))
+    ) : (
+      <Text>Nothing here</Text>
+    )}
+  </Stack>
+  );
+};
+
+const SelectedSchool = ({ schoolKey, selected, removeSchool }) => {
+  return (
+    <Box p={5} shadow="md" borderWidth={1}>
+    <Heading fontSize="md" mb={2}>
+      {formatLogoFilename(schoolKey)}
+    </Heading>
+    <List spacing={3}>
+      {selected.map((school) => (
+        <SelectedSchoolItem key={school} school={school} removeSchool={removeSchool} />
+      ))}
+    </List>
+  </Box>
+  );
+};
+
+const SelectedSchoolItem = ({ school, removeSchool }) => {
+  return (
+    <ListItem fontSize="md">
+    <Tooltip label={`Remove ${school}`}>
+      <IconButton
+        variant="ghost"
+        mr={2}
+        size="xs"
+        icon="close"
+        variantColor="red"
+        onClick={() => removeSchool(school)}
+      />
+    </Tooltip>
+    {school}
+  </ListItem>
+  );
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////
