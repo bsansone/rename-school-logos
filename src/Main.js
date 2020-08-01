@@ -30,7 +30,6 @@ import {
   useToast,
 } from "@chakra-ui/core";
 import Fuse from "fuse.js";
-import debounce from "lodash.debounce";
 import startCase from "lodash.startcase";
 
 // Data
@@ -143,11 +142,12 @@ function Main() {
   const [isFixingSchools, setIsFixingSchools] = React.useState(false);
   const [schoolQuery, setSchoolQuery] = React.useState("");
   const [fuseResults, setFuseResults] = React.useState([]);
-  const delayedSchoolQuery = React.useCallback(
-    debounce((q) => getFuseResults(q), 500),
-    []
-  );
   const [currentLogo, setCurrentLogo] = React.useState(LOGOS[logoIndex]);
+  const [tabIndex, setTabIndex] = React.useState(0);
+
+  const handleTabsChange = index => {
+    setTabIndex(index);
+  };
 
   const getNextLogoIndex = () => {
     if (logoIndex === LOGOS.length - 1) {
@@ -202,40 +202,41 @@ function Main() {
     setIsLoadingSearchResults(false);
   };
 
-  const onSchoolQuery = (e) => {
-    setSchoolQuery(e.target.value);
+  const handleSchoolQuery = (e) => {
+      const value = e.target.value;
 
-    if (e.target.value.length >= 3) {
-      setIsLoadingSearchResults(true);
-      delayedSchoolQuery(e.target.value);
-    }
+      if (value.length >= 3) {
+        setIsLoadingSearchResults(true);
+      }
 
-    if (e.target.value.length === 0) {
-      setFuseResults([]);
-    }
+      setSchoolQuery(value);
   };
 
-  const toggleCheckedSchools = (checked) => {
-    const newCheckedSchools = {
-      ...checkedSchools,
-      [currentLogo]: [...checked],
-    };
+  const toggleCheckedSchools = React.useCallback((checked) => {
+    setCheckedSchools((prevState) => ({
+      ...prevState,
+      [currentLogo]: [...checked]
+    }));
+    setSavedCheckedSchools((prevState) => ({
+      ...prevState,
+      [currentLogo]: [...checked]
+    }));
+  }, [currentLogo, setSavedCheckedSchools]);
 
-    setCheckedSchools(newCheckedSchools);
-    setSavedCheckedSchools(newCheckedSchools);
-  };
-
-  const removeSchool = (school) => {
-    const newCheckedSchools = {
-      ...checkedSchools,
-      [currentLogo]: checkedSchools[currentLogo].filter(
+  const removeSchool = React.useCallback((school) => {
+    setCheckedSchools((prevState) => ({
+      ...prevState,
+      [currentLogo]: prevState[currentLogo].filter(
         (_school) => _school !== school
       ),
-    };
-
-    setCheckedSchools(newCheckedSchools);
-    setSavedCheckedSchools(newCheckedSchools);
-  };
+    }));
+    setSavedCheckedSchools((prevState) => ({
+      ...prevState,
+      [currentLogo]: prevState[currentLogo].filter(
+        (_school) => _school !== school
+      ),
+    }));
+  }, [currentLogo, setSavedCheckedSchools]);
 
   const fixSchools = () => {
     setIsFixingSchools(true);
@@ -297,6 +298,22 @@ function Main() {
     downloadAnchorNode.remove();
   };
 
+  const debouncedSearchTerm = useDebounce(schoolQuery, 500);
+
+  React.useEffect(() => {
+      const trimmedDebouncedSearchTerm = debouncedSearchTerm
+        ? debouncedSearchTerm.trim()
+        : "";
+
+      if (trimmedDebouncedSearchTerm && trimmedDebouncedSearchTerm.length >= 3) {
+        getFuseResults(trimmedDebouncedSearchTerm);
+      } else if (!trimmedDebouncedSearchTerm) {
+        setFuseResults([]);
+      }
+    },
+    [debouncedSearchTerm]
+  );
+
   React.useEffect(() => {
     const newIndex = parseInt(location.pathname.replace("/", "")) || 0;
 
@@ -322,7 +339,7 @@ function Main() {
       my={4}
       bg="white"
     >
-      <Tabs variant="soft-rounded">
+      <Tabs variant="soft-rounded" index={tabIndex} onChange={handleTabsChange}>
         <TabList>
           <Tab>Home</Tab>
           <Tab>Current Results</Tab>
@@ -330,6 +347,8 @@ function Main() {
         </TabList>
         <TabPanels>
           <TabPanel>
+            {tabIndex === 0 ? (
+              <React.Fragment>
             <SchoolSelect
               logoIndex={logoIndex}
               logos={logos}
@@ -361,7 +380,7 @@ function Main() {
               />
               <Input
                 placeholder="Search schools..."
-                onChange={onSchoolQuery}
+                onChange={handleSchoolQuery}
                 value={schoolQuery}
                 type="text"
                 borderWidth={2}
@@ -374,21 +393,29 @@ function Main() {
               checkedSchools={checkedSchools}
               toggleCheckedSchools={toggleCheckedSchools}
             />
+              </React.Fragment>
+            ) : (
+              <Skeleton height={10} my={10} />
+            )}
           </TabPanel>
           <TabPanel>
-            <SelectedSchools
-              checkedSchools={checkedSchools}
-              removeSchool={removeSchool}
-            />
+            {tabIndex === 1 ? (
+              <SelectedSchools
+                checkedSchools={checkedSchools}
+                removeSchool={removeSchool}
+              />
+            ) : <Skeleton height={10} my={10} />}
           </TabPanel>
           <TabPanel>
+            {tabIndex === 2 ? (
             <Stack pt={8} spacing={4}>
               <Button onClick={downloadSavedData}>Download Saved Data</Button>
               <Button onClick={fixSchools} disabled={isFixingSchools}>
                 {isFixingSchools ? "Fixing..." : "Fix Schools"}
               </Button>
             </Stack>
-          </TabPanel>
+            ) : <Skeleton height={10} my={10} />}
+            </TabPanel>
         </TabPanels>
       </Tabs>
     </Box>
@@ -409,21 +436,21 @@ const SchoolSelect = ({ logoIndex, logos, checkedSchools, goToLogo }) => {
           key={index}
           index={index}
           logo={logo}
-          selected={checkedSchools[LOGOS[index]]}
+          selectedLength={checkedSchools[LOGOS[index]] ? checkedSchools[LOGOS[index]].length : 0}
         />
       ))}
     </Select>
   );
 };
 
-const SchoolSelectOption = ({ index, logo, selected }) => {
+const SchoolSelectOption = React.memo(({ index, logo, selectedLength }) => {
   return (
     <option value={index}>
       {formatLogoFilename(logo)}{" "}
-      {selected && selected.length > 0 ? ` — (${selected.length})` : null}
+      {selectedLength > 0 ? ` — (${selectedLength})` : null}
     </option>
   );
-};
+});
 
 const SearchResults = ({
   isLoadingSearchResults,
@@ -473,7 +500,7 @@ const SearchResults = ({
   );
 };
 
-const Result = ({ name, score, location }) => {
+const Result = React.memo(({ name, score, location }) => {
   return (
     <Flex ml={4} justifyContent="space-between" align="center">
       <Flex flexDir="column">
@@ -504,7 +531,7 @@ const Result = ({ name, score, location }) => {
       </Flex>
     </Flex>
   );
-};
+});
 
 const SelectedSchoolTags = ({ selected, removeSchool }) => {
   if (!selected || !selected.length || selected.length === 0) {
@@ -514,12 +541,22 @@ const SelectedSchoolTags = ({ selected, removeSchool }) => {
   return (
     <Flex mb={4} flexWrap="wrap">
       {selected.map((school) => (
-        <Tag key={school} mr={2} mb={2}>
-          <TagLabel>{school}</TagLabel>
-          <TagCloseButton onClick={() => removeSchool(school)} />
-        </Tag>
+        <SelectedSchoolTag
+          key={school}
+          school={school}
+          removeSchool={removeSchool}
+        />
       ))}
     </Flex>
+  );
+};
+
+const SelectedSchoolTag = ({ school, removeSchool }) => {
+  return (
+    <Tag key={school} mr={2} mb={2}>
+      <TagLabel>{school}</TagLabel>
+      <TagCloseButton onClick={() => removeSchool(school)} />
+    </Tag>
   );
 };
 
@@ -625,6 +662,41 @@ function useLocalStorage(key, initialValue) {
   };
 
   return [storedValue, setValue];
+}
+ 
+//////////////////////////////////////////////////////////////////////////////////////////
+// useDebounce
+// Source: https://dev.to/gabe_ragland/debouncing-with-react-hooks-jci
+function useDebounce(value, delay) {
+  // State and setters for debounced value
+  const [debouncedValue, setDebouncedValue] = React.useState(value);
+
+  React.useEffect(
+    () => {
+      // Set debouncedValue to value (passed in) after the specified delay
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      // Return a cleanup function that will be called every time ...
+      // ... useEffect is re-called. useEffect will only be re-called ...
+      // ... if value changes (see the inputs array below). 
+      // This is how we prevent debouncedValue from changing if value is ...
+      // ... changed within the delay period. Timeout gets cleared and restarted.
+      // To put it in context, if the user is typing within our app's ...
+      // ... search box, we don't want the debouncedValue to update until ...
+      // ... they've stopped typing for more than 500ms.
+      return () => {
+        clearTimeout(handler);
+      };
+    },
+    // Only re-call effect if value changes
+    // You could also add the "delay" var to inputs array if you ...
+    // ... need to be able to change that dynamically.
+    [value, delay] 
+  );
+
+  return debouncedValue;
 }
 
 export default Main;

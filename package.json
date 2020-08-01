@@ -11,7 +11,6 @@
     "@testing-library/user-event": "^7.2.1",
     "emotion-theming": "^10.0.27",
     "fuse.js": "^6.4.0",
-    "lodash.debounce": "^4.0.8",
     "lodash.startcase": "^4.4.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
