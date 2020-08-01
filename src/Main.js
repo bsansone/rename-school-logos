@@ -332,7 +332,7 @@ function Main() {
           <TabPanel>
             <SchoolSelect
               logoIndex={logoIndex}
-                logos={logos}
+              logos={logos}
               checkedSchools={checkedSchools}
               goToLogo={goToLogo}
             />
@@ -369,8 +369,8 @@ function Main() {
             </Box>
             <SearchResults
               isLoadingSearchResults={isLoadingSearchResults}
-                currentLogo={currentLogo}
-                fuseResults={fuseResults}
+              currentLogo={currentLogo}
+              fuseResults={fuseResults}
               checkedSchools={checkedSchools}
               toggleCheckedSchools={toggleCheckedSchools}
             />
@@ -420,9 +420,7 @@ const SchoolSelectOption = ({ index, logo, selected }) => {
   return (
     <option value={index}>
       {formatLogoFilename(logo)}{" "}
-      {selected && selected.length > 0
-        ? ` — (${selected.length})`
-        : null}
+      {selected && selected.length > 0 ? ` — (${selected.length})` : null}
     </option>
   );
 };
@@ -526,62 +524,66 @@ const SelectedSchoolTags = ({ selected, removeSchool }) => {
 };
 
 const SelectedSchools = ({ checkedSchools, removeSchool }) => {
-  const hasCheckedSchools = checkedSchools && Object.keys(checkedSchools).length > 0;
+  const hasCheckedSchools =
+    checkedSchools && Object.keys(checkedSchools).length > 0;
 
   return (
     <Stack spacing={4} pt={8}>
-    {hasCheckedSchools ? (
-      Object.keys(checkedSchools)
-        .filter(
-          (schoolKey) =>
-            checkedSchools[schoolKey] &&
-            checkedSchools[schoolKey].length
-        )
-        .map((schoolKey) => (
-          <SelectedSchool
-            key={schoolKey}
-            schoolKey={schoolKey}
-            selected={checkedSchools[schoolKey]}
-            removeSchool={removeSchool}
-          />
-        ))
-    ) : (
-      <Text>Nothing here</Text>
-    )}
-  </Stack>
+      {hasCheckedSchools ? (
+        Object.keys(checkedSchools)
+          .filter(
+            (schoolKey) =>
+              checkedSchools[schoolKey] && checkedSchools[schoolKey].length
+          )
+          .map((schoolKey) => (
+            <SelectedSchool
+              key={schoolKey}
+              schoolKey={schoolKey}
+              selected={checkedSchools[schoolKey]}
+              removeSchool={removeSchool}
+            />
+          ))
+      ) : (
+        <Text>Nothing here</Text>
+      )}
+    </Stack>
   );
 };
 
 const SelectedSchool = ({ schoolKey, selected, removeSchool }) => {
   return (
     <Box p={5} shadow="md" borderWidth={1}>
-    <Heading fontSize="md" mb={2}>
-      {formatLogoFilename(schoolKey)}
-    </Heading>
-    <List spacing={3}>
-      {selected.map((school) => (
-        <SelectedSchoolItem key={school} school={school} removeSchool={removeSchool} />
-      ))}
-    </List>
-  </Box>
+      <Heading fontSize="md" mb={2}>
+        {formatLogoFilename(schoolKey)}
+      </Heading>
+      <List spacing={3}>
+        {selected.map((school) => (
+          <SelectedSchoolItem
+            key={school}
+            school={school}
+            removeSchool={removeSchool}
+          />
+        ))}
+      </List>
+    </Box>
   );
 };
 
 const SelectedSchoolItem = ({ school, removeSchool }) => {
   return (
     <ListItem fontSize="md">
-    <Tooltip label={`Remove ${school}`}>
-      <IconButton
-        variant="ghost"
-        mr={2}
-        size="xs"
-        icon="close"
-        variantColor="red"
-        onClick={() => removeSchool(school)}
-      />
-    </Tooltip>
-    {school}
-  </ListItem>
+      <Tooltip label={`Remove ${school}`}>
+        <IconButton
+          variant="ghost"
+          mr={2}
+          size="xs"
+          icon="close"
+          variantColor="red"
+          onClick={() => removeSchool(school)}
+        />
+      </Tooltip>
+      {school}
+    </ListItem>
   );
 };
 
